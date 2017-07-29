@@ -101,7 +101,7 @@ class Record:
 
             # make board image for moves
             input_board_images = np.zeros((0, 15, 15), dtype=np.int8)
-            output_board_labels = np.zeros((0, 225), dtype=np.bool)
+            output_board_labels = np.zeros((0, 2, 15), dtype=np.bool)
 
             output_board_image = np.zeros((15, 15), dtype=np.int8)
 
@@ -110,7 +110,6 @@ class Record:
             for move in array_moves:
                 row_num = 15 - int(move[1:])
                 col_num = dic_char_to_num[move[0]]
-                index_num = row_num * 15 + col_num
 
                 # initialize input board image to previous board image
                 input_board_image = output_board_image.copy()
@@ -121,16 +120,18 @@ class Record:
                     exit(1)
 
                 # make output board image include next move
-                output_board_label = np.zeros(225, dtype=np.int8)
+                output_board_label = np.zeros((2, 15), dtype=np.int8)
                 if cnt_moves % 2 == 0:
                     output_board_image[row_num][col_num] = 1
-                    output_board_label[index_num] = 1
+                    output_board_label[0][row_num] = 1
+                    output_board_label[1][col_num] = 1
                 else:
                     output_board_image[row_num][col_num] = -1
-                    output_board_label[index_num] = -1
+                    output_board_label[0][row_num] = -1
+                    output_board_label[1][col_num] = -1
 
                 input_board_images = np.vstack((input_board_images, input_board_image.reshape(1, 15, 15)))
-                output_board_labels = np.vstack((output_board_labels, output_board_label.reshape(1, 225)))
+                output_board_labels = np.vstack((output_board_labels, output_board_label.reshape(1, 2, 15)))
 
                 cnt_moves += 1
 
@@ -142,7 +143,7 @@ class Record:
 
             # check
             if cnt_games == 1:
-                print(output_board_labels[64].reshape(15, 15))
+                print(output_board_labels[64])
                 plot_board(input_board_images[64])
 
         meta_record.write(str(len_board_images))
@@ -172,10 +173,10 @@ class Record:
             len_board_images = count
         else:
             len_board_images = cls.get_len_board_images()
-        output_board_labels = np.zeros((len_board_images, 225))
+        output_board_labels = np.zeros((len_board_images, 2, 15))
         with open("../ParseGomoku/output_record", "rb") as output_record:
             for k in range(len_board_images):
-                output_board_labels[k] = np.frombuffer(output_record.read(225), dtype=np.int8)
+                output_board_labels[k] = np.frombuffer(output_record.read(30), dtype=np.int8).reshape(2, 15)
 
         print("shape of output_board_labels:", output_board_labels.shape)
         return output_board_labels
@@ -185,5 +186,5 @@ if __name__ == '__main__':
     # Record.make_new_record()
     x_board_images = Record.load_input_records(500)
     y_board_labels = Record.load_output_records(500)
-    print(y_board_labels[270].reshape(15, 15))
+    print(y_board_labels[270])
     plot_board(x_board_images[270], x_board_images[271])
