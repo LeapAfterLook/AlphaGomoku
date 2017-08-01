@@ -1,16 +1,18 @@
 from xml.etree.ElementTree import parse, tostring
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 # Parse the database and deal with records
 # Download the database: renju.net/downloads/games.php
 
+cur_dir = os.path.abspath(os.path.dirname(__file__))
 
 def parse_database():
     """
     Parse database (xml files) of renju or gomoku games from renju.net and return element tree about xml file
     """
-    file = open("../ParseGomoku/renjunet_v10_20170716.rif", encoding='utf-8', errors='ignore')
+    file = open(os.path.join(cur_dir, "renjunet_v10_20170716.rif"), encoding='utf-8', errors='ignore')
     tree = parse(file)
     file.close()
     database = tree.getroot()
@@ -66,16 +68,16 @@ class Record:
 
     @classmethod
     def get_len_board_images(cls):
-        with open("../ParseGomoku/meta_record") as meta_record:
+        with open(cur_dir + "/meta_record") as meta_record:
             len_board_images = int(meta_record.readline())
 
         return len_board_images
 
     @classmethod
     def make_new_record(cls):
-        input_record = open("../ParseGomoku/input_record", "wb")
-        output_record = open("../ParseGomoku/output_record", "wb")
-        meta_record = open("../ParseGomoku/meta_record", "w")
+        input_record = open(os.path.join(cur_dir, "input_record"), "wb")
+        output_record = open(os.path.join(cur_dir, "output_record"), "wb")
+        meta_record = open(os.path.join(cur_dir, "meta_record"), "w")
 
         database = parse_database()
 
@@ -144,7 +146,7 @@ class Record:
             # check
             if cnt_games == 1:
                 print(output_board_labels[64])
-                plot_board(input_board_images[64])
+                # plot_board(input_board_images[64])
 
         meta_record.write(str(len_board_images))
         input_record.close()
@@ -160,7 +162,7 @@ class Record:
         else:
             len_board_images = cls.get_len_board_images()
         input_board_images = np.zeros((len_board_images, 15, 15))
-        with open("../ParseGomoku/input_record", "rb") as input_record:
+        with open(os.path.join(cur_dir, "input_record"), "rb") as input_record:
             for k in range(len_board_images):
                 input_board_images[k] = np.frombuffer(input_record.read(225), dtype=np.int8).reshape(15, 15)
 
@@ -174,7 +176,7 @@ class Record:
         else:
             len_board_images = cls.get_len_board_images()
         output_board_labels = np.zeros((len_board_images, 2, 15))
-        with open("../ParseGomoku/output_record", "rb") as output_record:
+        with open(os.path.join(cur_dir, "output_record"), "rb") as output_record:
             for k in range(len_board_images):
                 output_board_labels[k] = np.frombuffer(output_record.read(30), dtype=np.int8).reshape(2, 15)
 
@@ -183,8 +185,8 @@ class Record:
 
 
 if __name__ == '__main__':
-    # Record.make_new_record()
+    #Record.make_new_record()
     x_board_images = Record.load_input_records(500)
     y_board_labels = Record.load_output_records(500)
-    print(y_board_labels[270])
-    plot_board(x_board_images[270], x_board_images[271])
+    # print(y_board_labels[270])
+    # plot_board(x_board_images[270], x_board_images[271])
