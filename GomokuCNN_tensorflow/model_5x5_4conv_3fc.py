@@ -102,9 +102,10 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    saver.restore(sess, os.path.join(cur_dir, 'tmp_4conv3fc_no_pooling/4_28000_model.ckpt'))
+    saver.restore(sess, os.path.join(cur_dir, 'tmp_4conv3fc_no_pooling/30_28000_model.ckpt'))
     print("Model restored.")
-    for epoch in range(5, 31):
+    for epoch in range(5, 6):
+        """
         if epoch == 32:
             for i in range(8000, 28000):
                 batch_start = i * 50
@@ -132,11 +133,11 @@ with tf.Session() as sess:
                 if (i + 1) % 28000 == 0:
                    save_path = saver.save(sess, cur_dir + '/tmp_4conv3fc_no_pooling/' + str(epoch) + '_' + str(i + 1) + '_model.ckpt')
                    print("Model saved in file: %s" % save_path)
-
+        """
         list_test_accuracy = np.zeros(0, dtype=np.float)
-        for i in range(5):
-            test_index = i * 500
-            test_accuracy = accuracy.eval(feed_dict={x: x_test[test_index:test_index + 500], y_answer: y_test[test_index:test_index + 500], keep_prob: 1.0})
+        for i in range(100):
+            test_index = i * 2000
+            test_accuracy = accuracy.eval(feed_dict={x: x_test[test_index:test_index + 2000], y_answer: y_test[test_index:test_index + 2000], keep_prob: 1.0})
             list_test_accuracy = np.append(list_test_accuracy, test_accuracy)
             print('epoch: %d, test accuracy: %g' % (epoch, test_accuracy))
         print("average test accuracy: %g" % list_test_accuracy.mean())
