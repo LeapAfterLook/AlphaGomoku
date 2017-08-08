@@ -3,6 +3,7 @@ import numpy as np
 from ..ParseGomoku.renjunet import Record
 import os
 
+
 def weight_variable(name, shape):
     return tf.get_variable(name=name, shape=shape, initializer=tf.contrib.layers.xavier_initializer())
 
@@ -68,13 +69,6 @@ h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 W_fc2 = weight_variable("W_fc2", [1024, 30])
 b_fc2 = bias_variable("b_fc2", [30])
 
-# h_fc2 = tf.nn.relu(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
-# h_fc2_drop = tf.nn.dropout(h_fc2, keep_prob)
-'''
-# 3rd fc layer
-W_fc3 = weight_variable("W_fc3", [1024, 30])
-b_fc3 = bias_variable("b_fc3", [30])
-'''
 y = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
 y_row_pred, y_col_pred = tf.split(y, 2, 1)

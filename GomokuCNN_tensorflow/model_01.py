@@ -3,6 +3,7 @@ import numpy as np
 from ..ParseGomoku.renjunet import Record
 import os
 
+
 def weight_variable(name, shape):
     return tf.get_variable(name=name, shape=shape, initializer=tf.contrib.layers.xavier_initializer())
 
@@ -85,7 +86,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    saver.restore(sess, os.path.join(cur_dir, 'tmp/29_28000_model.ckpt'))
+    saver.restore(sess, os.path.join(cur_dir, 'saved_model_01/29_28000_model.ckpt'))
     print("Model restored.")
     for epoch in range(29, 30):
         if epoch == 14:
@@ -96,7 +97,7 @@ with tf.Session() as sess:
                     print('step %d, training accuracy %g' % (i, train_accuracy))
                 sess.run(train_step, feed_dict={x: x_train[batch_start:batch_start + 50], y_answer: y_train[batch_start:batch_start + 50], keep_prob: 0.5})
                 if (i + 1) % 1000 == 0 and i > 10:
-                    save_path = saver.save(sess, cur_dir + '/tmp/' + str(epoch) + '_' + str(i + 1) + '_model.ckpt')
+                    save_path = saver.save(sess, cur_dir + '/saved_model_01/' + str(epoch) + '_' + str(i + 1) + '_model.ckpt')
                     print("Model saved in file: %s" % save_path)
         else:
             pass
@@ -111,7 +112,7 @@ with tf.Session() as sess:
                     print('step %d, training accuracy %g' % (i, train_accuracy))
                 sess.run(train_step, feed_dict={x: x_train[batch_start:batch_start + 50], y_answer: y_train[batch_start:batch_start + 50], keep_prob: 0.5})
                 if (i + 1) % 28000 == 0 and i > 10:
-                   save_path = saver.save(sess, cur_dir + '/tmp/' + str(epoch) + '_' + str(i + 1) + '_model.ckpt')
+                   save_path = saver.save(sess, cur_dir + '/saved_model_01/' + str(epoch) + '_' + str(i + 1) + '_model.ckpt')
                    print("Model saved in file: %s" % save_path)
             '''
         list_test_accuracy = np.zeros(0, dtype=np.float)
