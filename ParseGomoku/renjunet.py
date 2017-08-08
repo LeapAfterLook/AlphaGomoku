@@ -185,7 +185,7 @@ class Record:
 
 
 if __name__ == '__main__':
-    #Record.make_new_record()
+    Record.make_new_record()
     x_board_images = Record.load_input_records(500)
     y_board_labels = Record.load_output_records(500)
     # print(y_board_labels[270])
