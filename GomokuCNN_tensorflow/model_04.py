@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 from ..ParseGomoku.renjunet import Record
 import os
+import time
 
 
 def weight_variable(name, shape):
@@ -98,12 +99,15 @@ with tf.Session() as sess:
             train = list(zip(x_train, y_train))
             np.random.shuffle(train)
             x_train, y_train = zip(*train)
+            start_time = time.time()
             for i in range(28000):
                 batch_start = i * 50
-                if i % 100 == 0:
+                if i % 2000 == 0:
                     train_accuracy = accuracy.eval(feed_dict={x: x_train[batch_start:batch_start + 50], y_answer: y_train[batch_start:batch_start + 50], keep_prob: 1.0})
                     loss = cross_entropy.eval(feed_dict={x: x_train[batch_start:batch_start + 50], y_answer: y_train[batch_start:batch_start + 50], keep_prob: 1.0})
-                    print('step %d, training accuracy %g, loss %g' % (i, train_accuracy, loss))
+                    end_time = time.time()
+                    print('step %d, training accuracy %g, loss %g, time consumption %g s' % (i, train_accuracy, loss, end_time - start_time))
+                    start_time = end_time
                 sess.run(train_step, feed_dict={x: x_train[batch_start:batch_start + 50], y_answer: y_train[batch_start:batch_start + 50], keep_prob: 0.5})
                 if (i + 1) % 28000 == 0:
                     save_path = saver.save(sess, cur_dir + '/saved_model_04/' + str(epoch) + '_' + str(i + 1) + '_model.ckpt')
