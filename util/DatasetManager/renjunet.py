@@ -5,8 +5,8 @@ import os
 import sys
 if not ".." in sys.path:
     sys.path.append("..")
-from UserInterface.board import position_char_to_num, insert_move
-from error import MoveFormatError, BoardDuplicateError
+from UserInterface.board import position_char_to_num, insert_move, valid_move
+from error import MoveFormatError
 
 # Parse the database and deal with records
 # Download the database: renju.net/downloads/games.php
@@ -91,42 +91,32 @@ class Record:
 
             # make board image for moves
             input_boards = np.zeros((0, 15, 15, record_encoding_option), dtype=np.int8)
-            output_labels = np.zeros((0, 2, 15), dtype=np.int)
+            output_labels = np.zeros((0, 2, 15), dtype=np.int8)
             output_board = np.zeros((15, 15, record_encoding_option), dtype=np.int8)
-
+            
             cnt_moves = 0  # if cnt_moves is even (when color is 0), next move is black
             for move in array_moves:
                 row_num, col_num = position_char_to_num(move)
 
                 # initialize input board image to previous board image
                 input_board = output_board.copy()
-
                 color = cnt_moves % 2
-                # check duplicate error
-                try:
-                    if record_encoding_option is 1:
-                        if input_board[row_num][col_num][0] != 0:
-                            raise BoardDuplicateError
-                    elif record_encoding_option is 2:
-                        if input_board[row_num][col_num][color] != 0:
-                            raise BoardDuplicateError
-                except BoardDuplicateError as e:
-                    print(e)
+                if not valid_move(input_board, (row_num, col_num), color):
                     exit(1)
 
                 # make output board image include next move
-                output_board_label = np.zeros((2, 15), dtype=np.int)
+                output_label = np.zeros((2, 15), dtype=np.int8)
                 insert_move(output_board, move, color)
-                output_board_label[0][row_num] = 1
-                output_board_label[1][col_num] = 1
+                output_label[0][row_num] = 1
+                output_label[1][col_num] = 1
 
                 input_boards = np.vstack((input_boards, np.expand_dims(input_board, 0)))
-                output_board_labels = np.vstack((output_board_labels, np.expand_dims(output_board_label, 0)))
+                output_labels = np.vstack((output_labels, np.expand_dims(output_label, 0)))
 
                 cnt_moves += 1
 
             input_record.write(input_boards.tobytes())
-            output_record.write(output_board_labels.tobytes())
+            output_record.write(output_labels.tobytes())
             len_boards += len(input_boards)
 
             cnt_games += 1
@@ -155,26 +145,16 @@ class Record:
             len_boards = count
         else:
             len_boards = cls.get_len_boards()
-        if encoding_option == 'vector':
-            output_board_labels = np.zeros((len_boards, 2, 15))
+        if record_decoding_option == 'vector':
+            output_labels = np.zeros((len_boards, 2, 15))
             with open(os.path.join(cur_dir, "output_record"), "rb") as output_record:
                 for k in range(len_boards):
-                    output_board_labels[k] = np.frombuffer(output_record.read(30), dtype=np.int).reshape(2, 15)
-        elif encoding_option == 'sequence':
-            output_board_labels = np.zeros((len_boards, 225))
+                    output_labels[k] = np.frombuffer(output_record.read(30), dtype=np.int8).reshape(2, 15)
+        elif record_decoding_option == 'sequence':
+            output_labels = np.zeros((len_boards, 225))
             with open(os.path.join(cur_dir, "output_record"), "rb") as output_record:
                 for k in range(len_boards):
                     vector = np.frombuffer(output_record.read(30), dtype=np.int8).reshape(2, 15)
-                    output_board_labels[k][vector[0].argmax() * 15 + vector[1].argmax()] = 1
-        print("shape of output_board_labels:", output_board_labels.shape)
-        return output_board_labels
-
-# make record and test
-if __name__ == '__main__':
-    Record.make_new_record()
-    x_boards = Record.load_record_input(500)
-    y_board_labels = Record.load_record_output(500, encoding_option='vector')
-    print(y_board_labels[270])
-    y_board_labels = Record.load_record_output(500, encoding_option='sequence')
-    print(y_board_labels[270], y_board_labels[270].argmax())
-    plot_board(x_board_images[264], x_board_images[265])
+                    output_labels[k][vector[0].argmax() * 15 + vector[1].argmax()] = 1
+        print("shape of output_labels:", output_labels.shape)
+        return output_labels

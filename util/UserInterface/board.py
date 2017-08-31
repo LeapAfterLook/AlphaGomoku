@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import sys
 if not ".." in sys.path:
     sys.path.append("..")
-from error import ImpossiblePositionError, ImpossibleColorError, MoveFormatError
+from error import ImpossiblePositionError, ImpossibleColorError, MoveFormatError, BoardDuplicateError
 
 
 # index dictionary
@@ -61,7 +61,6 @@ def insert_move(board, move, color):
     except ImpossibleColorError as e:
         print(e)
         exit(1)
-
     try:
         if type(move) is type(""):
             row_num, col_num = position_char_to_num(move)
@@ -74,7 +73,6 @@ def insert_move(board, move, color):
     except MoveFormatError as e:
         print(e)
         exit(1)
-
     if board.ndim is 3:
         board[row_num][col_num][color] = 1
     elif board.ndim is 2:
@@ -83,6 +81,7 @@ def insert_move(board, move, color):
             board[row_num][col_num] = 1
         else:
             board[row_num][col_num] = -1
+    return board
 
 
 def plot_board(board, other_board=None):
@@ -110,3 +109,44 @@ def plot_board(board, other_board=None):
         ax2.imshow(board_r, cmap='gray', interpolation='none')
         ax2.grid(True)
         plt.show()
+
+
+def valid_move(board, move, color):
+    """
+    check duplicate error
+    """
+    board = board.squeeze()
+    try:
+        if color is 'black' or color is 0:
+            color = 0
+        elif color is 'white' or color is 1:
+            color = 1
+        else:
+            raise ImpossibleColorError
+    except ImpossibleColorError as e:
+        print(e)
+        exit(1)
+    try:
+        if type(move) is type(""):
+            row_num, col_num = position_char_to_num(move)
+        elif type(move) is type(0):
+            row_num, col_num = position_char_to_num(position_num_to_char(move))
+        elif type(move) is type(()):
+            row_num, col_num = move[0], move[1]
+        else:
+            raise MoveFormatError("Wrong move type")
+    except MoveFormatError as e:
+        print(e)
+        exit(1)
+    try:
+        if board.ndim is 2:
+            # color -1, 1 respectively mean black and white
+            if board[row_num][col_num] != 0:
+                  raise BoardDuplicateError
+        elif board.ndim is 3:
+            if board[row_num][col_num][color] != 0:
+                  raise BoardDuplicateError
+    except BoardDuplicateError as e:
+        print(e)
+        return False
+    return True
