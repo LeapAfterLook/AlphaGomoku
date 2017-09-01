@@ -1,6 +1,0 @@
-model_checkpoint_path: "/home/ubuntu/dev/AlphaGomoku/GomokuCNN_tensorflow/saved_model_04/59_28000_model.ckpt"
-all_model_checkpoint_paths: "/home/ubuntu/dev/AlphaGomoku/GomokuCNN_tensorflow/saved_model_04/55_28000_model.ckpt"
-all_model_checkpoint_paths: "/home/ubuntu/dev/AlphaGomoku/GomokuCNN_tensorflow/saved_model_04/56_28000_model.ckpt"
-all_model_checkpoint_paths: "/home/ubuntu/dev/AlphaGomoku/GomokuCNN_tensorflow/saved_model_04/57_28000_model.ckpt"
-all_model_checkpoint_paths: "/home/ubuntu/dev/AlphaGomoku/GomokuCNN_tensorflow/saved_model_04/58_28000_model.ckpt"
-all_model_checkpoint_paths: "/home/ubuntu/dev/AlphaGomoku/GomokuCNN_tensorflow/saved_model_04/59_28000_model.ckpt"

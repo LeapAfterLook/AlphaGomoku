@@ -2,11 +2,8 @@ from xml.etree.ElementTree import parse, tostring
 import numpy as np
 import os
 
-import sys
-if not ".." in sys.path:
-    sys.path.append("..")
-from UserInterface.board import position_char_to_num, insert_move, valid_move
-from error import MoveFormatError
+from ..UserInterface.board import position_char_to_num, insert_move, check_not_duplicate_move
+from ..error import MoveFormatError
 
 # Parse the database and deal with records
 # Download the database: renju.net/downloads/games.php
@@ -101,7 +98,7 @@ class Record:
                 # initialize input board image to previous board image
                 input_board = output_board.copy()
                 color = cnt_moves % 2
-                if not valid_move(input_board, (row_num, col_num), color):
+                if not check_not_duplicate_move(input_board, (row_num, col_num)):
                     exit(1)
 
                 # make output board image include next move

@@ -1,11 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from mpl_toolkits.mplot3d import Axes3D
 import sys
-if not ".." in sys.path:
-    sys.path.append("..")
-from error import ImpossiblePositionError, ImpossibleColorError, MoveFormatError, BoardDuplicateError
 
+from ..error import ImpossiblePositionError, ImpossibleColorError, MoveFormatError, BoardDuplicateError
 
 # index dictionary
 dic_char_to_num = {}
@@ -14,6 +12,26 @@ char_list = ' '.join("abcdefghijklmno").split()
 for i in range(0, 15):
     dic_char_to_num[char_list[i]] = i
     dic_num_to_char[i] = char_list[i]
+
+"""
+------------------------------------------------------------------------
+                            Helper Functions
+------------------------------------------------------------------------
+"""
+
+
+def color_to_int(color):
+    try:
+        if color is 'black' or color is 0:
+            color = 0
+        elif color is 'white' or color is 1:
+            color = 1
+        else:
+            raise ImpossibleColorError
+        return color
+    except ImpossibleColorError as e:
+        print(e)
+        exit(1)
 
 
 def position_char_to_num(position_char):
@@ -37,46 +55,38 @@ def position_num_to_char(*args):
             position_row_num, position_col_num = args
         else:
             raise ImpossiblePositionError("Wrong position description")
-        if (0 <= position_row_num <= 14) and (0 <= position_col_num <= 14):
-            position_row_char = str(15 - position_row_num)
-            position_col_char = dic_num_to_char[position_col_num]
-            position_char = position_col_char + position_row_char
-            return position_char
+        position_row_char = str(15 - position_row_num)
+        position_col_char = dic_num_to_char[position_col_num]
+        position_char = position_col_char + position_row_char
+        return position_char
+    except ImpossiblePositionError as e:
+        print(e)
+        exit(1)
+
+
+def position_to_tup(position):
+    try:
+        if type(position) is type(""):
+            row_num, col_num = position_char_to_num(position)
+        elif type(position) is type(0):
+            row_num, col_num = position // 15, position % 15
+        elif type(tuple(position)) is type(()):
+            row_num, col_num = position[0], position[1]
         else:
-            raise ImpossiblePositionError("Position over the board")
-    except ImpossiblePossitionError as e:
+            raise MoveFormatError("Wrong move type")
+        return row_num, col_num
+    except MoveFormatError as e:
         print(e)
         exit(1)
 
 
 def insert_move(board, move, color):
     board = board.squeeze()
-    try:
-        if color is 'black' or color is 0:
-            color = 0
-        elif color is 'white' or color is 1:
-            color = 1
-        else:
-            raise ImpossibleColorError
-    except ImpossibleColorError as e:
-        print(e)
-        exit(1)
-    try:
-        if type(move) is type(""):
-            row_num, col_num = position_char_to_num(move)
-        elif type(move) is type(0):
-            row_num, col_num = position_char_to_num(position_num_to_char(move))
-        elif type(move) is type(()):
-            row_num, col_num = move[0], move[1]
-        else:
-            raise MoveFormatError("Wrong move type")
-    except MoveFormatError as e:
-        print(e)
-        exit(1)
+    color = color_to_int(color)
+    row_num, col_num = position_to_tup(move)
     if board.ndim is 3:
         board[row_num][col_num][color] = 1
     elif board.ndim is 2:
-        # color -1, 1 respectively mean black and white
         if color:
             board[row_num][col_num] = 1
         else:
@@ -111,42 +121,45 @@ def plot_board(board, other_board=None):
         plt.show()
 
 
-def valid_move(board, move, color):
-    """
-    check duplicate error
-    """
+def check_position_not_over_board(position):
+    row_num, col_num = position_to_tup(position)
+    if (0 <= row_num <= 14) and (0 <= col_num <= 14):
+        return True
+    else:
+        return False
+
+
+def check_not_duplicate_move(board, move):
     board = board.squeeze()
-    try:
-        if color is 'black' or color is 0:
-            color = 0
-        elif color is 'white' or color is 1:
-            color = 1
-        else:
-            raise ImpossibleColorError
-    except ImpossibleColorError as e:
-        print(e)
-        exit(1)
-    try:
-        if type(move) is type(""):
-            row_num, col_num = position_char_to_num(move)
-        elif type(move) is type(0):
-            row_num, col_num = position_char_to_num(position_num_to_char(move))
-        elif type(move) is type(()):
-            row_num, col_num = move[0], move[1]
-        else:
-            raise MoveFormatError("Wrong move type")
-    except MoveFormatError as e:
-        print(e)
-        exit(1)
+    row_num, col_num = position_to_tup(move)
     try:
         if board.ndim is 2:
-            # color -1, 1 respectively mean black and white
             if board[row_num][col_num] != 0:
                   raise BoardDuplicateError
         elif board.ndim is 3:
-            if board[row_num][col_num][color] != 0:
+            if board[row_num][col_num][0] != 0:
+                  raise BoardDuplicateError
+            if board[row_num][col_num][1] != 0:
                   raise BoardDuplicateError
     except BoardDuplicateError as e:
         print(e)
         return False
     return True
+
+
+def plot_action_prediction(prediction):
+    xpos, ypos = [], []
+    for i in range(15):
+        for j in range(15):
+            xpos.append(i)
+            ypos.append(j)
+    zpos = np.zeros(225)
+
+    dx = np.ones(225)
+    dy = np.ones(225)
+    dz = prediction.squeeze()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111, projection='3d')
+    ax1.bar3d(xpos, ypos, zpos, dx, dy, dz)
+    plt.show()
