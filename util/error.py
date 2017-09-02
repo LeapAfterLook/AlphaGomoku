@@ -1,5 +1,5 @@
 class MoveFormatError(Exception):
-    def __init(self, msg):
+    def __init__(self, msg):
         self.msg = msg
     def __str__(self):
         return "MoveFormatError: %s" % self.msg
@@ -12,11 +12,17 @@ class ImpossiblePositionError(Exception):
         return "ImpossiblePositionError: %s" % self.msg
 
 
-class ImpossibleColorError(Exception):
+class NotYourTurnError(Exception):
     def __str__(self):
-        return "ImpossibleColorError"
+        return "NotYourTurn!"
 
 
 class BoardDuplicateError(Exception):
+
+    def __init__(self,row_index,col_index):
+        Exception.__init__()
+        self.row_index = row_index
+        self.col_index = col_index
+
     def __str__(self):
-        return "BoardDuplicateError"
+        return "BoardDuplicateError" + str(self.row_index) + ' ' + str(self.col_index)
