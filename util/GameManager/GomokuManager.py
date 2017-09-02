@@ -157,8 +157,18 @@ class GomokuManager:
 
         return self.check_done()
 
-    # one_move에서 check_done은 따로!
-    # 여기까지 수정함.
+    def request_move(self,policy):
+        blacklist = []
+        while True:
+            try:
+                next_move = policy.get_next_move(state=self.state,blacklist=blacklist)
+                return next_move
+                break
+            except BoardDuplicateError as e:
+                blacklist.append(next_move)
+                print(e)
+
+
     """
     MCTS에서 expand_one_time() 할 때 Leaf노드에서 선택한 다음번 move를 입력받아서
     다음번 돌아온 자신의 차례에서의 state와 게임을 끝까지 simulation했을 때의 결과를 반환한다.
@@ -177,7 +187,7 @@ class GomokuManager:
                 return self._state, 1
 
         # 상대방도 한 수를 두고 게임이 끝났는지 확인한다.
-        enemy_next_move = enemy_policy.get_next_move(self._state)
+        enemy_next_move = self.request_move(policy=enemy_policy)
 
         done = self.one_move(enemy_next_move)
         if done:
@@ -201,7 +211,7 @@ class GomokuManager:
     def simulate(self, policy=None, my_policy=None, enemy_policy=None):
         if policy is not None:
             my_policy = enemy_policy = policy
-        next_move = my_policy.get_next_move(self._state)
+        next_move = self.request_move(policy=my_policy)
         done = self.one_move(next_move)
         if done:
             if self.turn() == 'black':
@@ -236,9 +246,13 @@ class GomokuManager:
 
     def test(self):
         while True:
-            next_move = tuple(input('next move?').split(' '))
-
-            self.one_move(next_move)
+            while True:
+                try:
+                    next_move = tuple(input('next move?').split(' '))
+                    self.one_move(next_move)
+                    break
+                except BoardDuplicateError as e:
+                    print(e)
             self.show_state()
             if self.check_done():
                 print('{winner} win!'.format(winner=self.last_turn()))
