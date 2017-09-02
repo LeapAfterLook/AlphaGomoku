@@ -142,7 +142,7 @@ def check_not_duplicate_move(board, move):
             if board[row_num][col_num][1] != 0:
                   raise BoardDuplicateError
     except BoardDuplicateError as e:
-        print(e)
+        print(e, "move: %d %d" % (row_num, col_num))
         return False
     return True
 

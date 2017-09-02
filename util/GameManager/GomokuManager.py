@@ -22,8 +22,11 @@ class GomokuManager:
             self._state = state
 
     @property
-    def state(self):
-        return self._state
+    def state(self, ndim=3):
+        state = np.zeros((2, 15, 15), dtype=np.int8)
+        state[0] = self._state == -1
+        state[1] = self._state == 1
+        return np.rollaxis(state, 0, 3)
     
     @state.setter
     def state(self, state):
@@ -69,16 +72,23 @@ class GomokuManager:
         directions = [np.array([0,1]), np.array([1,1]), np.array([1,0]), np.array([1,-1])]
         for direction in directions:
             back_pos = target_pos + (-1) * direction
-            while (self._state[tuple(back_pos)] == color) and check_position_not_over_board(back_pos):
+            if check_position_not_over_board(back_pos):
+                while (self._state[tuple(back_pos)] == color):
                     back_pos -= direction
+                    if not check_position_not_over_board(back_pos):
+                        break
             front_pos = back_pos + direction
             cnt_connect = 0
-            while (self._state[tuple(front_pos)] == color) and check_position_not_over_board(front_pos):
-                front_pos += direction
-                cnt_connect += 1
-                if cnt_connect >= 5:
-                    self.finish = True
-                    return True
+            if check_position_not_over_board(front_pos):
+                while (self._state[tuple(front_pos)] == color):
+                    front_pos += direction
+                    cnt_connect += 1
+                    if cnt_connect >= 5:
+                        print("The game is over!")
+                        self.finish = True
+                        return True
+                    if not check_position_not_over_board(front_pos):
+                        break
         return False
 
     def player_action(self, next_move):
@@ -86,16 +96,14 @@ class GomokuManager:
         update the state
         if invalid move, return false
         """
-        if self.last_turn() == 'black':
-            if check_not_duplicate_move(self._state, next_move):
-                self.last_move = position_to_tup(next_move)
+        if check_not_duplicate_move(self._state, next_move):
+            self.last_move = position_to_tup(next_move)
+            if self.last_turn() == 'black':
                 self._state[self.last_move] = 1
-                return True
-        else:
-            if check_not_duplicate_move(self._state, next_move):
-                self.last_move = position_to_tup(next_move)
+            else:
                 self._state[self.last_move] = -1
-                return True
+            self.check_done()
+            return True
         return False
 
     # one_step에서 check_done은 따로!
