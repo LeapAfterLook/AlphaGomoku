@@ -161,7 +161,7 @@ class GomokuManager:
         blacklist = []
         while True:
             try:
-                next_move = policy.get_next_move(state=self.state,blacklist=blacklist)
+                next_move = policy.get_next_move(state=self._state,blacklist=blacklist)
                 return next_move
                 break
             except BoardDuplicateError as e:
