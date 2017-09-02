@@ -20,7 +20,6 @@ class NotYourTurnError(Exception):
 class BoardDuplicateError(Exception):
 
     def __init__(self,row_index,col_index):
-        Exception.__init__()
         self.row_index = row_index
         self.col_index = col_index
 
